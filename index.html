@@ -809,10 +809,9 @@ async function loadDataFromGAS(){
   try {
     badge.innerHTML = 'Sumber data: <span class="text-white font-semibold">Menghubungkan ke Google Apps Script…</span>';
 
-    const response = await fetch(GAS_ENDPOINT_URL, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Tanpa header custom -> browser kirim "simple request" (tidak ada preflight OPTIONS),
+    // karena Apps Script Web App tidak punya handler doOptions().
+    const response = await fetch(GAS_ENDPOINT_URL, { method: 'GET' });
 
     if (!response.ok) throw new Error(`HTTP ${response.status} - gagal mengambil data dari endpoint`);
 

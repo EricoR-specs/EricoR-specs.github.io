@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Manajerial Replanting | GPM vs Rekomendasi Bongkar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          navy: { 950:'#081B33', 900:'#0B2A4A', 800:'#0F3A63', 700:'#154A7D', 600:'#1D5D9B' },
+          emerald: { 700:'#0A7A4F', 600:'#0F9D67', 500:'#14B876', 100:'#DCFCE9', 50:'#F0FDF6' }
+        },
+        boxShadow: {
+          soft: '0 1px 2px rgba(11,42,74,0.04), 0 4px 16px rgba(11,42,74,0.06)',
+          softer: '0 1px 3px rgba(11,42,74,0.05)',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-track { background: #EEF2F1; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: #B9C7CB; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94A8AD; }
+  .th-sticky { position: sticky; top: 0; z-index: 10; }
+  .col-sticky { position: sticky; left: 0; z-index: 5; }
+  table { border-collapse: separate; border-spacing: 0; }
+  .table-cell { white-space: nowrap; }
+  .fade-in { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px);} to {opacity:1; transform:none;} }
+  input[type=checkbox] { accent-color: #0F9D67; }
+  select:focus, input:focus { outline: none; }
+
+  /* ---------- Dual-thumb range slider ---------- */
+  .range-slider { position: relative; height: 26px; }
+  .range-slider .track-bg {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 4px; width: 100%; background: #E2E8F0; border-radius: 4px;
+  }
+  .range-slider .track-fill {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 4px; background: #0F9D67; border-radius: 4px;
+  }
+  .range-slider input[type=range] {
+    position: absolute; top: 50%; left: 0; width: 100%; margin: 0;
+    transform: translateY(-50%);
+    -webkit-appearance: none; appearance: none; background: transparent;
+    pointer-events: none;
+  }
+  .range-slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; pointer-events: auto;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #0F9D67; border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(11,42,74,0.4); cursor: pointer;
+  }
+  .range-slider input[type=range]::-moz-range-thumb {
+    pointer-events: auto; width: 14px; height: 14px; border-radius: 50%;
+    background: #0F9D67; border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(11,42,74,0.4); cursor: pointer;
+  }
+  .range-slider input[type=range]::-webkit-slider-runnable-track,
+  .range-slider input[type=range]::-moz-range-track { background: transparent; border: none; }
+  .thumb-min { z-index: 3; }
+  .thumb-max { z-index: 4; }
+
+  .chev { transition: transform .2s ease; }
+  .chev.rotated { transform: rotate(180deg); }
+</style>
+</head>
+<body class="bg-[#F4F7F6] text-slate-800 min-h-screen">
+
+<!-- ===================== TOPBAR ===================== -->
+<header class="bg-navy-900 text-white sticky top-0 z-40 shadow-lg">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-lg font-extrabold shadow-soft shrink-0">🌾</div>
+      <div>
+        <h1 class="text-base sm:text-lg font-extrabold tracking-tight leading-tight">Dashboard Manajerial Replanting</h1>
+        <p class="text-[11px] sm:text-xs text-navy-100/70 font-medium tracking-wide">GPM&nbsp;vs&nbsp;Rekomendasi&nbsp;Bongkar</p>
+      </div>
+    </div>
+    <div id="lastSyncBadge" class="text-[11px] sm:text-xs bg-white/10 border border-white/10 rounded-full px-3 py-1.5 font-medium text-navy-100/80 self-start sm:self-auto">
+      Sumber data: <span class="text-white font-semibold">Mock Data (Offline)</span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+  <!-- ===================== STAT CARDS ===================== -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 p-4 sm:p-5">
+      <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Petak GPM</p>
+      <p id="statTotalPetak" class="mt-1.5 text-2xl sm:text-3xl font-extrabold text-navy-900 mono">0</p>
+      <p class="mt-1 text-[11px] text-slate-400">seluruh data sheet GPM</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 p-4 sm:p-5">
+      <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Luas GPM (Ha)</p>
+      <p id="statTotalLuas" class="mt-1.5 text-2xl sm:text-3xl font-extrabold text-navy-900 mono">0</p>
+      <p class="mt-1 text-[11px] text-slate-400">akumulasi LUAS 2026</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-soft border border-emerald-100 p-4 sm:p-5">
+      <p class="text-[11px] sm:text-xs font-semibold text-emerald-700/70 uppercase tracking-wide">Petak Ter-Marked</p>
+      <p id="statMarked" class="mt-1.5 text-2xl sm:text-3xl font-extrabold text-emerald-700 mono">0</p>
+      <p class="mt-1 text-[11px] text-slate-400">sudah masuk rekomendasi bongkar</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-soft border border-navy-100 p-4 sm:p-5">
+      <p class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wide">Luas Rekomendasi Bongkar</p>
+      <p id="statLuasBongkar" class="mt-1.5 text-2xl sm:text-3xl font-extrabold text-navy-900 mono">0</p>
+      <p class="mt-1 text-[11px] text-slate-400">Ha &middot; status "Bongkar" aktif</p>
+    </div>
+  </section>
+
+  <!-- ===================== TAB NAV ===================== -->
+  <div class="flex items-center gap-2 bg-white rounded-2xl shadow-softer border border-slate-100 p-1.5 w-fit">
+    <button id="tabBtnGpm" onclick="switchTab('gpm')" class="tab-btn px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold transition-all">📋 Sheet GPM</button>
+    <button id="tabBtnBongkar" onclick="switchTab('bongkar')" class="tab-btn px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold transition-all">🚜 Rekomendasi Bongkar</button>
+  </div>
+
+  <!-- ===================== TAB: GPM ===================== -->
+  <section id="panelGpm" class="fade-in space-y-4">
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 p-4 sm:p-5 space-y-4">
+      <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
+        <div class="flex-1 min-w-[200px]">
+          <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pencarian Global</label>
+          <div class="relative mt-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <input id="gpmSearch" type="text" placeholder="Cari PETAK, KODE, atau BLOCK..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 lg:gap-3 lg:w-[440px]">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Divisi</label>
+            <select id="gpmFilterDivisi" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Varietas</label>
+            <select id="gpmFilterVarietas" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Category 2026</label>
+            <select id="gpmFilterCategory" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleAdvanced('gpm')" id="gpmAdvToggle" class="px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition whitespace-nowrap flex items-center gap-1.5">
+            🔧 Filter Lanjutan <span class="chev" id="gpmAdvChev">▾</span>
+          </button>
+          <button onclick="resetGpmFilters()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition whitespace-nowrap">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- ADVANCED FILTER PANEL: GPM -->
+      <div id="gpmAdvancedPanel" class="hidden pt-4 border-t border-slate-100 space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 lg:gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Block</label>
+            <select id="gpmFilterBlock" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Category 2025</label>
+            <select id="gpmFilterCategory2025" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Status Marked</label>
+            <select id="gpmFilterMarked" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500">
+              <option value="">Semua Status</option>
+              <option value="Yes">Yes (sudah masuk rekomendasi)</option>
+              <option value="No">No (belum masuk rekomendasi)</option>
+            </select>
+          </div>
+        </div>
+        <div id="gpmRangeFilters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-slate-100">
+        <p class="text-sm text-slate-500"><span id="gpmSelectedCount" class="font-bold text-navy-900">0</span> petak dipilih &middot; menampilkan <span id="gpmVisibleCount" class="font-semibold text-slate-700">0</span> dari <span id="gpmTotalCount" class="font-semibold text-slate-700">0</span> baris</p>
+        <button onclick="moveToBongkar()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-soft transition-all flex items-center gap-2 justify-center">
+          ➕ Pindahkan ke Rekomendasi Bongkar
+        </button>
+      </div>
+      <div class="overflow-x-auto max-h-[560px] overflow-y-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="th-sticky bg-navy-900 text-white text-[11px] uppercase tracking-wide">
+              <th class="col-sticky bg-navy-900 px-3 py-3 text-left w-10"><input type="checkbox" id="gpmSelectAll" onchange="toggleSelectAll(this.checked)"></th>
+              <th class="table-cell px-3 py-3 text-left">Kode</th>
+              <th class="table-cell px-3 py-3 text-left">Petak</th>
+              <th class="table-cell px-3 py-3 text-left">Block</th>
+              <th class="table-cell px-3 py-3 text-left">Divisi</th>
+              <th class="table-cell px-3 py-3 text-right">Luas 2026</th>
+              <th class="table-cell px-3 py-3 text-right">Luas Mill</th>
+              <th class="table-cell px-3 py-3 text-right">Luas Tebang</th>
+              <th class="table-cell px-3 py-3 text-left">Varietas 2026</th>
+              <th class="table-cell px-3 py-3 text-left">Tgl Tanam 2025/2026</th>
+              <th class="table-cell px-3 py-3 text-left">Category 2026</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2026</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2026 by Blok</th>
+              <th class="table-cell px-3 py-3 text-left">Category 2025</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2025</th>
+              <th class="table-cell px-3 py-3 text-right">SR/DR</th>
+              <th class="table-cell px-3 py-3 text-center">Marked</th>
+            </tr>
+          </thead>
+          <tbody id="gpmTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: BONGKAR ===================== -->
+  <section id="panelBongkar" class="fade-in space-y-4 hidden">
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 p-4 sm:p-5 space-y-4">
+      <div class="flex flex-col lg:flex-row lg:items-end gap-3 lg:gap-4">
+        <div class="flex-1 min-w-[200px]">
+          <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pencarian Global</label>
+          <div class="relative mt-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <input id="bongkarSearch" type="text" placeholder="Cari PETAK, KODE, atau BLOCK..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 lg:gap-3 lg:w-[440px]">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Divisi</label>
+            <select id="bongkarFilterDivisi" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Varietas</label>
+            <select id="bongkarFilterVarietas" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Category 2026</label>
+            <select id="bongkarFilterCategory" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleAdvanced('bongkar')" id="bongkarAdvToggle" class="px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition whitespace-nowrap flex items-center gap-1.5">
+            🔧 Filter Lanjutan <span class="chev" id="bongkarAdvChev">▾</span>
+          </button>
+          <button onclick="resetBongkarFilters()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition whitespace-nowrap">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- ADVANCED FILTER PANEL: BONGKAR -->
+      <div id="bongkarAdvancedPanel" class="hidden pt-4 border-t border-slate-100 space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 lg:gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Block</label>
+            <select id="bongkarFilterBlock" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Category 2025</label>
+            <select id="bongkarFilterCategory2025" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Status Bongkar</label>
+            <select id="bongkarFilterStatus" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500">
+              <option value="">Semua Status</option>
+              <option value="Bongkar">Bongkar</option>
+              <option value="Tidak Bongkar">Tidak Bongkar</option>
+            </select>
+          </div>
+        </div>
+        <div id="bongkarRangeFilters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+      <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-slate-100">
+        <p class="text-sm text-slate-500">Menampilkan <span id="bongkarVisibleCount" class="font-semibold text-slate-700">0</span> dari <span id="bongkarTotalCount" class="font-semibold text-slate-700">0</span> petak rekomendasi</p>
+      </div>
+      <div class="overflow-x-auto max-h-[560px] overflow-y-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="th-sticky bg-navy-900 text-white text-[11px] uppercase tracking-wide">
+              <th class="table-cell px-3 py-3 text-left">Kode</th>
+              <th class="table-cell px-3 py-3 text-left">Petak</th>
+              <th class="table-cell px-3 py-3 text-left">Block</th>
+              <th class="table-cell px-3 py-3 text-left">Divisi</th>
+              <th class="table-cell px-3 py-3 text-right">Luas 2026</th>
+              <th class="table-cell px-3 py-3 text-right">Luas Mill</th>
+              <th class="table-cell px-3 py-3 text-right">Luas Tebang</th>
+              <th class="table-cell px-3 py-3 text-left">Varietas 2026</th>
+              <th class="table-cell px-3 py-3 text-left">Tgl Tanam 2025/2026</th>
+              <th class="table-cell px-3 py-3 text-left">Category 2026</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2026</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2026 by Blok</th>
+              <th class="table-cell px-3 py-3 text-left">Category 2025</th>
+              <th class="table-cell px-3 py-3 text-right">TCH 2025</th>
+              <th class="table-cell px-3 py-3 text-left min-w-[150px]">Bongkar</th>
+              <th class="table-cell px-3 py-3 text-left min-w-[220px]">Alasan</th>
+              <th class="table-cell px-3 py-3 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="bongkarTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-8 pt-2">
+  <p class="text-[11px] text-slate-400 text-center">Dashboard Manajerial Replanting &middot; data bersumber dari Google Apps Script Web App (lihat fungsi <span class="mono">loadDataFromGAS()</span> pada kode)</p>
+</footer>
+
+<script>
+/* ============================================================
+   TAB STYLING
+============================================================ */
+function styleTabs(active){
+  const gpmBtn = document.getElementById('tabBtnGpm');
+  const bkBtn = document.getElementById('tabBtnBongkar');
+  const activeCls = ['bg-navy-900','text-white','shadow-soft'];
+  const inactiveCls = ['text-slate-500','hover:bg-slate-50'];
+  [gpmBtn, bkBtn].forEach(b => activeCls.concat(inactiveCls).forEach(c => b.classList.remove(c)));
+  if(active === 'gpm'){ gpmBtn.classList.add(...activeCls); bkBtn.classList.add(...inactiveCls); }
+  else { bkBtn.classList.add(...activeCls); gpmBtn.classList.add(...inactiveCls); }
+}
+function switchTab(tab){
+  document.getElementById('panelGpm').classList.toggle('hidden', tab !== 'gpm');
+  document.getElementById('panelBongkar').classList.toggle('hidden', tab !== 'bongkar');
+  styleTabs(tab);
+}
+function toggleAdvanced(table){
+  const panel = document.getElementById(table + 'AdvancedPanel');
+  const chev = document.getElementById(table + 'AdvChev');
+  panel.classList.toggle('hidden');
+  chev.classList.toggle('rotated');
+}
+
+/* ============================================================
+   MOCK DATA (15 baris) - ganti dengan data dari Google Apps Script
+============================================================ */
+let gpmData = [
+  mk('GPM-001','P-014','BLK-A1','Divisi 1', 12.4, 11.8, 12.0, 'BL 03','12/05/2025','A', 118, 121, 'A', 110, 2.1),
+  mk('GPM-002','P-021','BLK-A2','Divisi 1', 8.7, 8.2, 8.5, 'PS 08','03/07/2025','B', 96, 99, 'B', 92, 3.4),
+  mk('GPM-003','P-034','BLK-B1','Divisi 2', 15.2, 14.9, 15.0, 'GP 12','19/09/2025','A', 132, 128, 'A', 125, 1.8),
+  mk('GPM-004','P-045','BLK-B2','Divisi 2', 9.9, 9.3, 9.6, 'BL 03','02/11/2025','C', 78, 81, 'C', 74, 5.0),
+  mk('GPM-005','P-052','BLK-C1','Divisi 3', 11.1, 10.6, 10.8, 'PS 08','14/01/2026','B', 104, 107, 'B', 99, 2.9),
+  mk('GPM-006','P-063','BLK-C2','Divisi 3', 13.6, 13.0, 13.2, 'GP 12','28/02/2026','A', 128, 130, 'A', 122, 1.5),
+  mk('GPM-007','P-071','BLK-A3','Divisi 1', 7.4, 7.0, 7.2, 'BL 03','05/04/2025','C', 68, 70, 'C', 65, 6.2),
+  mk('GPM-008','P-082','BLK-A4','Divisi 1', 10.3, 9.8, 10.0, 'PS 08','21/05/2025','B', 101, 103, 'B', 95, 3.1),
+  mk('GPM-009','P-093','BLK-B3','Divisi 2', 14.8, 14.2, 14.5, 'GP 12','09/06/2025','A', 135, 133, 'A', 129, 1.2),
+  mk('GPM-010','P-104','BLK-B4','Divisi 2', 6.5, 6.1, 6.3, 'BL 03','30/07/2025','C', 62, 64, 'C', 58, 7.0),
+  mk('GPM-011','P-115','BLK-C3','Divisi 3', 12.9, 12.3, 12.6, 'PS 08','17/08/2025','B', 110, 112, 'B', 105, 2.4),
+  mk('GPM-012','P-126','BLK-C4','Divisi 3', 9.1, 8.6, 8.8, 'GP 12','04/10/2025','A', 124, 126, 'A', 118, 2.0),
+  mk('GPM-013','P-137','BLK-A5','Divisi 1', 16.0, 15.4, 15.7, 'BL 03','22/11/2025','A', 140, 138, 'A', 133, 1.0),
+  mk('GPM-014','P-148','BLK-B5','Divisi 2', 8.0, 7.5, 7.7, 'PS 08','11/12/2025','C', 71, 73, 'C', 67, 5.7),
+  mk('GPM-015','P-159','BLK-C5','Divisi 3', 11.7, 11.2, 11.4, 'GP 12','26/01/2026','B', 108, 106, 'B', 102, 2.6),
+];
+
+function mk(kode, petak, block, divisi, luas2026, luasMill, luasTebang, varietas, tglTanam, cat2026, tch2026, tch2026Blok, cat2025, tch2025, srdr){
+  return {
+    id: kode, kode, petak, block, divisi,
+    luas2026, luasMill, luasTebang,
+    varietas2026: varietas, tglTanam, category2026: cat2026,
+    tch2026, tch2026ByBlok: tch2026Blok, category2025: cat2025, tch2025, srdr: Number(srdr),
+    checked: false,
+  };
+}
+
+let bongkarData = []; // { id (=kode gpm), ...fields copy, status, alasan }
+
+const emptyRanges = () => ({});
+let gpmFilters = { search:'', divisi:'', varietas:'', category2026:'', block:'', category2025:'', marked:'', ranges: emptyRanges() };
+let bongkarFilters = { search:'', divisi:'', varietas:'', category2026:'', block:'', category2025:'', status:'', ranges: emptyRanges() };
+
+let gpmBounds = {};
+let bongkarBounds = {};
+
+const RANGE_FIELDS_GPM = [
+  { key:'luas2026',      label:'Luas 2026 (Ha)',        step:0.1 },
+  { key:'luasMill',      label:'Luas Mill (Ha)',        step:0.1 },
+  { key:'luasTebang',    label:'Luas Tebang (Ha)',      step:0.1 },
+  { key:'tch2026',       label:'TCH 2026',              step:1   },
+  { key:'tch2026ByBlok', label:'TCH 2026 by Blok',      step:1   },
+  { key:'tch2025',       label:'TCH 2025',              step:1   },
+  { key:'srdr',          label:'SR/DR (%)',             step:0.1 },
+];
+const RANGE_FIELDS_BONGKAR = [
+  { key:'luas2026',      label:'Luas 2026 (Ha)',        step:0.1 },
+  { key:'luasMill',      label:'Luas Mill (Ha)',        step:0.1 },
+  { key:'luasTebang',    label:'Luas Tebang (Ha)',      step:0.1 },
+  { key:'tch2026',       label:'TCH 2026',              step:1   },
+  { key:'tch2026ByBlok', label:'TCH 2026 by Blok',      step:1   },
+  { key:'tch2025',       label:'TCH 2025',              step:1   },
+];
+
+/* ============================================================
+   DERIVED HELPERS
+============================================================ */
+function isMarked(kode){ return bongkarData.some(b => b.id === kode); }
+function fmtNum(n){ return Number(n).toLocaleString('id-ID', { maximumFractionDigits: 1 }); }
+function uniqueValues(arr, key){ return [...new Set(arr.map(r => r[key]))].sort(); }
+function populateSelect(selectEl, values, placeholder, keepValue){
+  const current = keepValue ? selectEl.value : '';
+  selectEl.innerHTML = `<option value="">${placeholder}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
+  if (keepValue && values.includes(current)) selectEl.value = current;
+}
+function computeBounds(data, field){
+  const vals = data.map(r => Number(r[field])).filter(v => !isNaN(v));
+  if (!vals.length) return [0, 1];
+  let min = Math.floor(Math.min(...vals) * 10) / 10;
+  let max = Math.ceil(Math.max(...vals) * 10) / 10;
+  if (min === max) max = min + 1;
+  return [min, max];
+}
+
+/* ============================================================
+   FILTER OPTIONS POPULATION (dropdowns)
+============================================================ */
+function refreshFilterOptions(){
+  populateSelect(document.getElementById('gpmFilterDivisi'), uniqueValues(gpmData,'divisi'), 'Semua Divisi', true);
+  populateSelect(document.getElementById('gpmFilterVarietas'), uniqueValues(gpmData,'varietas2026'), 'Semua Varietas', true);
+  populateSelect(document.getElementById('gpmFilterCategory'), uniqueValues(gpmData,'category2026'), 'Semua Category', true);
+  populateSelect(document.getElementById('gpmFilterBlock'), uniqueValues(gpmData,'block'), 'Semua Block', true);
+  populateSelect(document.getElementById('gpmFilterCategory2025'), uniqueValues(gpmData,'category2025'), 'Semua Category', true);
+
+  populateSelect(document.getElementById('bongkarFilterDivisi'), uniqueValues(gpmData,'divisi'), 'Semua Divisi', true);
+  populateSelect(document.getElementById('bongkarFilterVarietas'), uniqueValues(gpmData,'varietas2026'), 'Semua Varietas', true);
+  populateSelect(document.getElementById('bongkarFilterCategory'), uniqueValues(gpmData,'category2026'), 'Semua Category', true);
+  populateSelect(document.getElementById('bongkarFilterBlock'), uniqueValues(gpmData,'block'), 'Semua Block', true);
+  populateSelect(document.getElementById('bongkarFilterCategory2025'), uniqueValues(gpmData,'category2025'), 'Semua Category', true);
+}
+
+/* ============================================================
+   RANGE SLIDER FILTERS (drag-based min/max)
+============================================================ */
+function buildRangeFilters(table, fields, dataForBounds){
+  const bounds = {};
+  fields.forEach(f => { bounds[f.key] = computeBounds(dataForBounds, f.key); });
+  if (table === 'gpm') gpmBounds = bounds; else bongkarBounds = bounds;
+
+  const filters = table === 'gpm' ? gpmFilters : bongkarFilters;
+  filters.ranges = {};
+  fields.forEach(f => { filters.ranges[f.key] = [...bounds[f.key]]; });
+
+  const container = document.getElementById(table + 'RangeFilters');
+  container.innerHTML = fields.map(f => rangeFilterHTML(table, f, bounds[f.key])).join('');
+  fields.forEach(f => bindRangeFilter(table, f, bounds[f.key]));
+}
+
+function rangeFilterHTML(table, field, bounds){
+  const [min, max] = bounds;
+  return `
+  <div class="bg-slate-50 rounded-xl border border-slate-200 px-3.5 py-3">
+    <div class="flex items-center justify-between mb-2.5">
+      <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">${field.label}</label>
+      <span class="text-[11px] font-bold text-navy-900 mono"><span id="${table}_${field.key}_minLbl">${fmtNum(min)}</span> – <span id="${table}_${field.key}_maxLbl">${fmtNum(max)}</span></span>
+    </div>
+    <div class="range-slider">
+      <div class="track-bg"></div>
+      <div class="track-fill" id="${table}_${field.key}_fill"></div>
+      <input type="range" class="thumb-min" id="${table}_${field.key}_min" min="${min}" max="${max}" step="${field.step}" value="${min}">
+      <input type="range" class="thumb-max" id="${table}_${field.key}_max" min="${min}" max="${max}" step="${field.step}" value="${max}">
+    </div>
+  </div>`;
+}
+
+function bindRangeFilter(table, field, bounds){
+  const [boundMin, boundMax] = bounds;
+  const key = field.key;
+  const minInput = document.getElementById(`${table}_${key}_min`);
+  const maxInput = document.getElementById(`${table}_${key}_max`);
+  const fill = document.getElementById(`${table}_${key}_fill`);
+  const minLbl = document.getElementById(`${table}_${key}_minLbl`);
+  const maxLbl = document.getElementById(`${table}_${key}_maxLbl`);
+
+  function update(){
+    let minV = parseFloat(minInput.value);
+    let maxV = parseFloat(maxInput.value);
+    const filters = table === 'gpm' ? gpmFilters : bongkarFilters;
+    filters.ranges[key] = [minV, maxV];
+    minLbl.textContent = fmtNum(minV);
+    maxLbl.textContent = fmtNum(maxV);
+    const span = (boundMax - boundMin) || 1;
+    const pctMin = ((minV - boundMin) / span) * 100;
+    const pctMax = ((maxV - boundMin) / span) * 100;
+    fill.style.left = pctMin + '%';
+    fill.style.width = Math.max(0, pctMax - pctMin) + '%';
+    table === 'gpm' ? renderGpmTable() : renderBongkarTable();
+  }
+  minInput.addEventListener('input', () => {
+    if (parseFloat(minInput.value) > parseFloat(maxInput.value)) minInput.value = maxInput.value;
+    update();
+  });
+  maxInput.addEventListener('input', () => {
+    if (parseFloat(maxInput.value) < parseFloat(minInput.value)) maxInput.value = minInput.value;
+    update();
+  });
+  update();
+}
+
+function inRange(value, range){
+  if (!range) return true;
+  return value >= range[0] && value <= range[1];
+}
+
+/* ============================================================
+   RENDER: GPM TABLE
+============================================================ */
+function applyGpmFilters(rows){
+  const s = gpmFilters.search.trim().toLowerCase();
+  return rows.filter(r => {
+    if (gpmFilters.divisi && r.divisi !== gpmFilters.divisi) return false;
+    if (gpmFilters.varietas && r.varietas2026 !== gpmFilters.varietas) return false;
+    if (gpmFilters.category2026 && r.category2026 !== gpmFilters.category2026) return false;
+    if (gpmFilters.block && r.block !== gpmFilters.block) return false;
+    if (gpmFilters.category2025 && r.category2025 !== gpmFilters.category2025) return false;
+    if (gpmFilters.marked === 'Yes' && !isMarked(r.id)) return false;
+    if (gpmFilters.marked === 'No' && isMarked(r.id)) return false;
+    if (s && !(r.petak.toLowerCase().includes(s) || r.kode.toLowerCase().includes(s) || r.block.toLowerCase().includes(s))) return false;
+    for (const f of RANGE_FIELDS_GPM) {
+      if (!inRange(Number(r[f.key]), gpmFilters.ranges[f.key])) return false;
+    }
+    return true;
+  });
+}
+
+function renderGpmTable(){
+  const tbody = document.getElementById('gpmTableBody');
+  const filtered = applyGpmFilters(gpmData);
+  tbody.innerHTML = filtered.map(r => {
+    const marked = isMarked(r.id);
+    return `
+    <tr class="hover:bg-emerald-50/40 transition-colors">
+      <td class="col-sticky bg-white px-3 py-2.5"><input type="checkbox" data-id="${r.id}" onchange="toggleRowCheck('${r.id}', this.checked)" ${r.checked ? 'checked' : ''}></td>
+      <td class="table-cell px-3 py-2.5 font-semibold text-navy-900 mono text-xs">${r.kode}</td>
+      <td class="table-cell px-3 py-2.5">${r.petak}</td>
+      <td class="table-cell px-3 py-2.5">${r.block}</td>
+      <td class="table-cell px-3 py-2.5">${r.divisi}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luas2026)}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luasMill)}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luasTebang)}</td>
+      <td class="table-cell px-3 py-2.5">${r.varietas2026}</td>
+      <td class="table-cell px-3 py-2.5">${r.tglTanam}</td>
+      <td class="table-cell px-3 py-2.5"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-navy-50 text-navy-700 border border-navy-100">${r.category2026}</span></td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2026)}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2026ByBlok)}</td>
+      <td class="table-cell px-3 py-2.5">${r.category2025}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2025)}</td>
+      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.srdr)}</td>
+      <td class="table-cell px-3 py-2.5 text-center">
+        ${marked
+          ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">● Yes</span>'
+          : '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">● No</span>'}
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('gpmVisibleCount').textContent = filtered.length;
+  document.getElementById('gpmTotalCount').textContent = gpmData.length;
+  document.getElementById('gpmSelectedCount').textContent = gpmData.filter(r => r.checked).length;
+
+  const allChecked = filtered.length > 0 && filtered.every(r => r.checked);
+  document.getElementById('gpmSelectAll').checked = allChecked;
+}
+
+function toggleRowCheck(id, checked){
+  const row = gpmData.find(r => r.id === id);
+  if (row) row.checked = checked;
+  renderGpmTable();
+}
+function toggleSelectAll(checked){
+  const filtered = applyGpmFilters(gpmData);
+  filtered.forEach(r => r.checked = checked);
+  renderGpmTable();
+}
+
+/* ============================================================
+   MOVE GPM -> BONGKAR
+============================================================ */
+function moveToBongkar(){
+  const selected = gpmData.filter(r => r.checked && !isMarked(r.id));
+  if (selected.length === 0){
+    alert('Pilih minimal satu petak yang belum ter-marked untuk dipindahkan.');
+    return;
+  }
+  selected.forEach(r => {
+    bongkarData.push({
+      id: r.id, kode: r.kode, petak: r.petak, block: r.block, divisi: r.divisi,
+      luas2026: r.luas2026, luasMill: r.luasMill, luasTebang: r.luasTebang,
+      varietas2026: r.varietas2026, tglTanam: r.tglTanam, category2026: r.category2026,
+      tch2026: r.tch2026, tch2026ByBlok: r.tch2026ByBlok, category2025: r.category2025, tch2025: r.tch2025,
+      status: 'Bongkar', alasan: '',
+    });
+    r.checked = false;
+  });
+  renderGpmTable();
+  renderBongkarTable();
+  renderStats();
+  switchTab('bongkar');
+}
+
+/* ============================================================
+   RENDER: BONGKAR TABLE
+============================================================ */
+function applyBongkarFilters(rows){
+  const s = bongkarFilters.search.trim().toLowerCase();
+  return rows.filter(r => {
+    if (bongkarFilters.divisi && r.divisi !== bongkarFilters.divisi) return false;
+    if (bongkarFilters.varietas && r.varietas2026 !== bongkarFilters.varietas) return false;
+    if (bongkarFilters.category2026 && r.category2026 !== bongkarFilters.category2026) return false;
+    if (bongkarFilters.block && r.block !== bongkarFilters.block) return false;
+    if (bongkarFilters.category2025 && r.category2025 !== bongkarFilters.category2025) return false;
+    if (bongkarFilters.status && r.status !== bongkarFilters.status) return false;
+    if (s && !(r.petak.toLowerCase().includes(s) || r.kode.toLowerCase().includes(s) || r.block.toLowerCase().includes(s))) return false;
+    for (const f of RANGE_FIELDS_BONGKAR) {
+      if (!inRange(Number(r[f.key]), bongkarFilters.ranges[f.key])) return false;
+    }
+    return true;
+  });
+}
+
+function renderBongkarTable(){
+  const tbody = document.getElementById('bongkarTableBody');
+  const filtered = applyBongkarFilters(bongkarData);
+
+  if (filtered.length === 0){
+    tbody.innerHTML = `<tr><td colspan="17" class="text-center py-12 text-slate-400 text-sm">
+      ${bongkarData.length === 0
+        ? 'Belum ada petak di daftar Rekomendasi Bongkar.<br>Pindahkan petak dari tab "Sheet GPM" untuk memulai.'
+        : 'Tidak ada petak yang cocok dengan filter saat ini.'}
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = filtered.map(r => {
+      const needsAlasan = r.status === 'Tidak Bongkar';
+      const alasanInvalid = needsAlasan && !r.alasan.trim();
+      return `
+      <tr class="hover:bg-emerald-50/40 transition-colors align-top">
+        <td class="table-cell px-3 py-2.5 font-semibold text-navy-900 mono text-xs">${r.kode}</td>
+        <td class="table-cell px-3 py-2.5">${r.petak}</td>
+        <td class="table-cell px-3 py-2.5">${r.block}</td>
+        <td class="table-cell px-3 py-2.5">${r.divisi}</td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luas2026)}</td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luasMill)}</td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.luasTebang)}</td>
+        <td class="table-cell px-3 py-2.5">${r.varietas2026}</td>
+        <td class="table-cell px-3 py-2.5">${r.tglTanam}</td>
+        <td class="table-cell px-3 py-2.5"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-navy-50 text-navy-700 border border-navy-100">${r.category2026}</span></td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2026)}</td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2026ByBlok)}</td>
+        <td class="table-cell px-3 py-2.5">${r.category2025}</td>
+        <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2025)}</td>
+        <td class="px-3 py-2.5">
+          <select onchange="updateBongkarStatus('${r.id}', this.value)"
+            class="w-full py-1.5 px-2 rounded-lg border text-xs font-bold focus:ring-2 focus:ring-emerald-500/40
+              ${r.status === 'Bongkar' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}">
+            <option value="Bongkar" ${r.status === 'Bongkar' ? 'selected' : ''}>Bongkar</option>
+            <option value="Tidak Bongkar" ${r.status === 'Tidak Bongkar' ? 'selected' : ''}>Tidak Bongkar</option>
+          </select>
+        </td>
+        <td class="px-3 py-2.5">
+          ${needsAlasan ? `
+            <input type="text" placeholder="Wajib diisi..." value="${(r.alasan || '').replace(/"/g,'&quot;')}"
+              oninput="updateBongkarAlasan('${r.id}', this.value)"
+              class="w-full py-1.5 px-2.5 rounded-lg border text-xs focus:ring-2 focus:ring-emerald-500/40
+                ${alasanInvalid ? 'border-red-400 bg-red-50 text-red-700 placeholder-red-300' : 'border-slate-200'}">
+            ${alasanInvalid ? '<p class="text-[10px] text-red-500 font-semibold mt-1">⚠ Alasan wajib diisi</p>' : ''}
+          ` : '<span class="text-slate-300 text-xs">—</span>'}
+        </td>
+        <td class="px-3 py-2.5 text-center">
+          <button onclick="removeFromBongkar('${r.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition">🗑 Hapus</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('bongkarVisibleCount').textContent = filtered.length;
+  document.getElementById('bongkarTotalCount').textContent = bongkarData.length;
+}
+
+function updateBongkarStatus(id, value){
+  const row = bongkarData.find(r => r.id === id);
+  if (!row) return;
+  row.status = value;
+  if (value === 'Bongkar') row.alasan = '';
+  renderBongkarTable();
+  renderStats();
+}
+function updateBongkarAlasan(id, value){
+  const row = bongkarData.find(r => r.id === id);
+  if (!row) return;
+  row.alasan = value;
+  const stillInvalid = row.status === 'Tidak Bongkar' && !row.alasan.trim();
+  const inputEl = document.querySelector(`input[oninput*="'${id}'"]`);
+  if (inputEl){
+    inputEl.classList.toggle('border-red-400', stillInvalid);
+    inputEl.classList.toggle('bg-red-50', stillInvalid);
+    inputEl.classList.toggle('text-red-700', stillInvalid);
+    inputEl.classList.toggle('border-slate-200', !stillInvalid);
+  }
+  renderStats();
+}
+function removeFromBongkar(id){
+  bongkarData = bongkarData.filter(r => r.id !== id);
+  renderGpmTable();
+  renderBongkarTable();
+  renderStats();
+}
+
+/* ============================================================
+   FILTER RESET
+============================================================ */
+function resetGpmFilters(){
+  gpmFilters.search = ''; gpmFilters.divisi = ''; gpmFilters.varietas = '';
+  gpmFilters.category2026 = ''; gpmFilters.block = ''; gpmFilters.category2025 = ''; gpmFilters.marked = '';
+  document.getElementById('gpmSearch').value = '';
+  ['gpmFilterDivisi','gpmFilterVarietas','gpmFilterCategory','gpmFilterBlock','gpmFilterCategory2025','gpmFilterMarked']
+    .forEach(id => document.getElementById(id).value = '');
+  buildRangeFilters('gpm', RANGE_FIELDS_GPM, gpmData);
+  renderGpmTable();
+}
+function resetBongkarFilters(){
+  bongkarFilters.search = ''; bongkarFilters.divisi = ''; bongkarFilters.varietas = '';
+  bongkarFilters.category2026 = ''; bongkarFilters.block = ''; bongkarFilters.category2025 = ''; bongkarFilters.status = '';
+  document.getElementById('bongkarSearch').value = '';
+  ['bongkarFilterDivisi','bongkarFilterVarietas','bongkarFilterCategory','bongkarFilterBlock','bongkarFilterCategory2025','bongkarFilterStatus']
+    .forEach(id => document.getElementById(id).value = '');
+  buildRangeFilters('bongkar', RANGE_FIELDS_BONGKAR, gpmData);
+  renderBongkarTable();
+}
+
+/* ============================================================
+   STATS
+============================================================ */
+function renderStats(){
+  document.getElementById('statTotalPetak').textContent = gpmData.length;
+  document.getElementById('statTotalLuas').textContent = fmtNum(gpmData.reduce((a,r)=>a+r.luas2026,0));
+  document.getElementById('statMarked').textContent = gpmData.filter(r => isMarked(r.id)).length;
+  const luasBongkarAktif = bongkarData.filter(r => r.status === 'Bongkar').reduce((a,r)=>a+r.luas2026,0);
+  document.getElementById('statLuasBongkar').textContent = fmtNum(luasBongkarAktif);
+}
+
+/* ============================================================
+   MASTER RENDER
+============================================================ */
+function renderAll(){
+  refreshFilterOptions();
+  buildRangeFilters('gpm', RANGE_FIELDS_GPM, gpmData);
+  buildRangeFilters('bongkar', RANGE_FIELDS_BONGKAR, gpmData);
+  renderGpmTable();
+  renderBongkarTable();
+  renderStats();
+}
+
+/* ============================================================
+   EVENT BINDINGS
+============================================================ */
+document.getElementById('gpmSearch').addEventListener('input', e => { gpmFilters.search = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterDivisi').addEventListener('change', e => { gpmFilters.divisi = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterVarietas').addEventListener('change', e => { gpmFilters.varietas = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterCategory').addEventListener('change', e => { gpmFilters.category2026 = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterBlock').addEventListener('change', e => { gpmFilters.block = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterCategory2025').addEventListener('change', e => { gpmFilters.category2025 = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterMarked').addEventListener('change', e => { gpmFilters.marked = e.target.value; renderGpmTable(); });
+
+document.getElementById('bongkarSearch').addEventListener('input', e => { bongkarFilters.search = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterDivisi').addEventListener('change', e => { bongkarFilters.divisi = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterVarietas').addEventListener('change', e => { bongkarFilters.varietas = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterCategory').addEventListener('change', e => { bongkarFilters.category2026 = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterBlock').addEventListener('change', e => { bongkarFilters.block = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterCategory2025').addEventListener('change', e => { bongkarFilters.category2025 = e.target.value; renderBongkarTable(); });
+document.getElementById('bongkarFilterStatus').addEventListener('change', e => { bongkarFilters.status = e.target.value; renderBongkarTable(); });
+
+/* ============================================================
+   INIT
+============================================================ */
+switchTab('gpm');
+renderAll();
+
+
+/* ============================================================================================
+   INTEGRASI GOOGLE APPS SCRIPT WEB APP (ambil data awal GPM & Rekomendasi Bongkar)
+   ------------------------------------------------------------------------------------------
+   1. Deploy Apps Script sebagai Web App (Execute as: Me, Access: Anyone / Anyone with link).
+   2. Endpoint doGet() di Apps Script diharapkan mengembalikan JSON dengan struktur:
+      {
+        "gpm": [ { "kode": "...", "petak": "...", "block": "...", "divisi": "...",
+                   "luas2026": 0, "luasMill": 0, "luasTebang": 0, "varietas2026": "...",
+                   "tglTanam": "...", "category2026": "...", "tch2026": 0,
+                   "tch2026ByBlok": 0, "category2025": "...", "tch2025": 0, "srdr": 0 }, ... ],
+        "bongkar": [ { "id": "...", "status": "Bongkar" | "Tidak Bongkar", "alasan": "..." }, ... ]
+      }
+   3. Ganti GAS_ENDPOINT_URL di bawah dengan URL Web App milikmu (diakhiri /exec).
+   4. Panggil loadDataFromGAS() untuk menimpa mock data dengan data live saat halaman dibuka.
+      Filter (dropdown & range slider) otomatis dibangun ulang mengikuti rentang data baru.
+============================================================================================ */
+
+const GAS_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxyM3rwvwa9bNs8_N2OAvRK_seS57G75ErSQGmo-9yx8zOIXYWZatTuqJRDZo5Eyc-CVg/exec';
+
+async function loadDataFromGAS(){
+  const badge = document.getElementById('lastSyncBadge');
+  try {
+    badge.innerHTML = 'Sumber data: <span class="text-white font-semibold">Menghubungkan ke Google Apps Script…</span>';
+
+    const response = await fetch(GAS_ENDPOINT_URL, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status} - gagal mengambil data dari endpoint`);
+
+    const result = await response.json();
+
+    if (Array.isArray(result.gpm)) {
+      gpmData = result.gpm.map(row => mk(
+        row.kode, row.petak, row.block, row.divisi,
+        Number(row.luas2026) || 0, Number(row.luasMill) || 0, Number(row.luasTebang) || 0,
+        row.varietas2026, row.tglTanam, row.category2026,
+        Number(row.tch2026) || 0, Number(row.tch2026ByBlok) || 0,
+        row.category2025, Number(row.tch2025) || 0, Number(row.srdr) || 0
+      ));
+    }
+
+    if (Array.isArray(result.bongkar)) {
+      bongkarData = result.bongkar.map(row => {
+        const source = gpmData.find(g => g.id === row.id) || {};
+        return {
+          id: row.id, kode: source.kode || row.id, petak: source.petak || '', block: source.block || '',
+          divisi: source.divisi || '', luas2026: source.luas2026 || 0, luasMill: source.luasMill || 0,
+          luasTebang: source.luasTebang || 0, varietas2026: source.varietas2026 || '',
+          tglTanam: source.tglTanam || '', category2026: source.category2026 || '',
+          tch2026: source.tch2026 || 0, tch2026ByBlok: source.tch2026ByBlok || 0,
+          category2025: source.category2025 || '', tch2025: source.tch2025 || 0,
+          status: row.status || 'Bongkar', alasan: row.alasan || '',
+        };
+      });
+    }
+
+    badge.innerHTML = `Sumber data: <span class="text-white font-semibold">Google Apps Script (live)</span> &middot; ${new Date().toLocaleTimeString('id-ID')}`;
+    renderAll(); // membangun ulang seluruh filter (dropdown + range slider) sesuai domain data baru
+
+  } catch (err) {
+    console.error('Gagal memuat data dari Google Apps Script:', err);
+    badge.innerHTML = 'Sumber data: <span class="text-red-300 font-semibold">Gagal terhubung — memakai Mock Data</span>';
+    // Aplikasi tetap berjalan dengan mock data jika fetch gagal
+  }
+}
+
+// Aktifkan baris di bawah ini untuk mengambil data otomatis saat halaman dimuat:
+loadDataFromGAS();
+</script>
+</body>
+</html>

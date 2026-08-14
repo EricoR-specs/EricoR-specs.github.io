@@ -165,7 +165,7 @@
 
       <!-- ADVANCED FILTER PANEL: GPM -->
       <div id="gpmAdvancedPanel" class="hidden pt-4 border-t border-slate-100 space-y-4">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 lg:gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:gap-3">
           <div>
             <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Block</label>
             <select id="gpmFilterBlock" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
@@ -173,6 +173,10 @@
           <div>
             <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Category 2025</label>
             <select id="gpmFilterCategory2025" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">SR / DR</label>
+            <select id="gpmFilterSrdr" class="mt-1 w-full py-2.5 px-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"></select>
           </div>
           <div>
             <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Status Marked</label>
@@ -213,7 +217,7 @@
               <th class="table-cell px-3 py-3 text-right">TCH 2026 by Blok</th>
               <th class="table-cell px-3 py-3 text-left">Category 2025</th>
               <th class="table-cell px-3 py-3 text-right">TCH 2025</th>
-              <th class="table-cell px-3 py-3 text-right">SR/DR</th>
+              <th class="table-cell px-3 py-3 text-center">SR/DR</th>
               <th class="table-cell px-3 py-3 text-center">Marked</th>
             </tr>
           </thead>
@@ -348,21 +352,21 @@ function toggleAdvanced(table){
    MOCK DATA (15 baris) - ganti dengan data dari Google Apps Script
 ============================================================ */
 let gpmData = [
-  mk('GPM-001','P-014','BLK-A1','Divisi 1', 12.4, 11.8, 12.0, 'BL 03','12/05/2025','A', 118, 121, 'A', 110, 2.1),
-  mk('GPM-002','P-021','BLK-A2','Divisi 1', 8.7, 8.2, 8.5, 'PS 08','03/07/2025','B', 96, 99, 'B', 92, 3.4),
-  mk('GPM-003','P-034','BLK-B1','Divisi 2', 15.2, 14.9, 15.0, 'GP 12','19/09/2025','A', 132, 128, 'A', 125, 1.8),
-  mk('GPM-004','P-045','BLK-B2','Divisi 2', 9.9, 9.3, 9.6, 'BL 03','02/11/2025','C', 78, 81, 'C', 74, 5.0),
-  mk('GPM-005','P-052','BLK-C1','Divisi 3', 11.1, 10.6, 10.8, 'PS 08','14/01/2026','B', 104, 107, 'B', 99, 2.9),
-  mk('GPM-006','P-063','BLK-C2','Divisi 3', 13.6, 13.0, 13.2, 'GP 12','28/02/2026','A', 128, 130, 'A', 122, 1.5),
-  mk('GPM-007','P-071','BLK-A3','Divisi 1', 7.4, 7.0, 7.2, 'BL 03','05/04/2025','C', 68, 70, 'C', 65, 6.2),
-  mk('GPM-008','P-082','BLK-A4','Divisi 1', 10.3, 9.8, 10.0, 'PS 08','21/05/2025','B', 101, 103, 'B', 95, 3.1),
-  mk('GPM-009','P-093','BLK-B3','Divisi 2', 14.8, 14.2, 14.5, 'GP 12','09/06/2025','A', 135, 133, 'A', 129, 1.2),
-  mk('GPM-010','P-104','BLK-B4','Divisi 2', 6.5, 6.1, 6.3, 'BL 03','30/07/2025','C', 62, 64, 'C', 58, 7.0),
-  mk('GPM-011','P-115','BLK-C3','Divisi 3', 12.9, 12.3, 12.6, 'PS 08','17/08/2025','B', 110, 112, 'B', 105, 2.4),
-  mk('GPM-012','P-126','BLK-C4','Divisi 3', 9.1, 8.6, 8.8, 'GP 12','04/10/2025','A', 124, 126, 'A', 118, 2.0),
-  mk('GPM-013','P-137','BLK-A5','Divisi 1', 16.0, 15.4, 15.7, 'BL 03','22/11/2025','A', 140, 138, 'A', 133, 1.0),
-  mk('GPM-014','P-148','BLK-B5','Divisi 2', 8.0, 7.5, 7.7, 'PS 08','11/12/2025','C', 71, 73, 'C', 67, 5.7),
-  mk('GPM-015','P-159','BLK-C5','Divisi 3', 11.7, 11.2, 11.4, 'GP 12','26/01/2026','B', 108, 106, 'B', 102, 2.6),
+  mk('GPM-001','P-014','BLK-A1','Divisi 1', 12.4, 11.8, 12.0, 'BL 03','12/05/2025','A', 118, 121, 'A', 110, 'SR'),
+  mk('GPM-002','P-021','BLK-A2','Divisi 1', 8.7, 8.2, 8.5, 'PS 08','03/07/2025','B', 96, 99, 'B', 92, 'DR'),
+  mk('GPM-003','P-034','BLK-B1','Divisi 2', 15.2, 14.9, 15.0, 'GP 12','19/09/2025','A', 132, 128, 'A', 125, 'SR'),
+  mk('GPM-004','P-045','BLK-B2','Divisi 2', 9.9, 9.3, 9.6, 'BL 03','02/11/2025','C', 78, 81, 'C', 74, 'DR'),
+  mk('GPM-005','P-052','BLK-C1','Divisi 3', 11.1, 10.6, 10.8, 'PS 08','14/01/2026','B', 104, 107, 'B', 99, 'SR'),
+  mk('GPM-006','P-063','BLK-C2','Divisi 3', 13.6, 13.0, 13.2, 'GP 12','28/02/2026','A', 128, 130, 'A', 122, 'DR'),
+  mk('GPM-007','P-071','BLK-A3','Divisi 1', 7.4, 7.0, 7.2, 'BL 03','05/04/2025','C', 68, 70, 'C', 65, 'SR'),
+  mk('GPM-008','P-082','BLK-A4','Divisi 1', 10.3, 9.8, 10.0, 'PS 08','21/05/2025','B', 101, 103, 'B', 95, 'DR'),
+  mk('GPM-009','P-093','BLK-B3','Divisi 2', 14.8, 14.2, 14.5, 'GP 12','09/06/2025','A', 135, 133, 'A', 129, 'SR'),
+  mk('GPM-010','P-104','BLK-B4','Divisi 2', 6.5, 6.1, 6.3, 'BL 03','30/07/2025','C', 62, 64, 'C', 58, 'DR'),
+  mk('GPM-011','P-115','BLK-C3','Divisi 3', 12.9, 12.3, 12.6, 'PS 08','17/08/2025','B', 110, 112, 'B', 105, 'SR'),
+  mk('GPM-012','P-126','BLK-C4','Divisi 3', 9.1, 8.6, 8.8, 'GP 12','04/10/2025','A', 124, 126, 'A', 118, 'DR'),
+  mk('GPM-013','P-137','BLK-A5','Divisi 1', 16.0, 15.4, 15.7, 'BL 03','22/11/2025','A', 140, 138, 'A', 133, 'SR'),
+  mk('GPM-014','P-148','BLK-B5','Divisi 2', 8.0, 7.5, 7.7, 'PS 08','11/12/2025','C', 71, 73, 'C', 67, 'DR'),
+  mk('GPM-015','P-159','BLK-C5','Divisi 3', 11.7, 11.2, 11.4, 'GP 12','26/01/2026','B', 108, 106, 'B', 102, 'SR'),
 ];
 
 function mk(kode, petak, block, divisi, luas2026, luasMill, luasTebang, varietas, tglTanam, cat2026, tch2026, tch2026Blok, cat2025, tch2025, srdr){
@@ -370,7 +374,7 @@ function mk(kode, petak, block, divisi, luas2026, luasMill, luasTebang, varietas
     id: kode, kode, petak, block, divisi,
     luas2026, luasMill, luasTebang,
     varietas2026: varietas, tglTanam, category2026: cat2026,
-    tch2026, tch2026ByBlok: tch2026Blok, category2025: cat2025, tch2025, srdr: Number(srdr),
+    tch2026, tch2026ByBlok: tch2026Blok, category2025: cat2025, tch2025, srdr: String(srdr || ''),
     checked: false,
   };
 }
@@ -378,7 +382,7 @@ function mk(kode, petak, block, divisi, luas2026, luasMill, luasTebang, varietas
 let bongkarData = []; // { id (=kode gpm), ...fields copy, status, alasan }
 
 const emptyRanges = () => ({});
-let gpmFilters = { search:'', divisi:'', varietas:'', category2026:'', block:'', category2025:'', marked:'', ranges: emptyRanges() };
+let gpmFilters = { search:'', divisi:'', varietas:'', category2026:'', block:'', category2025:'', marked:'', srdr:'', ranges: emptyRanges() };
 let bongkarFilters = { search:'', divisi:'', varietas:'', category2026:'', block:'', category2025:'', status:'', ranges: emptyRanges() };
 
 let gpmBounds = {};
@@ -391,7 +395,6 @@ const RANGE_FIELDS_GPM = [
   { key:'tch2026',       label:'TCH 2026',              step:1   },
   { key:'tch2026ByBlok', label:'TCH 2026 by Blok',      step:1   },
   { key:'tch2025',       label:'TCH 2025',              step:1   },
-  { key:'srdr',          label:'SR/DR (%)',             step:0.1 },
 ];
 const RANGE_FIELDS_BONGKAR = [
   { key:'luas2026',      label:'Luas 2026 (Ha)',        step:0.1 },
@@ -407,7 +410,7 @@ const RANGE_FIELDS_BONGKAR = [
 ============================================================ */
 function isMarked(kode){ return bongkarData.some(b => b.id === kode); }
 function fmtNum(n){ return Number(n).toLocaleString('id-ID', { maximumFractionDigits: 1 }); }
-function uniqueValues(arr, key){ return [...new Set(arr.map(r => r[key]))].sort(); }
+function uniqueValues(arr, key){ return [...new Set(arr.map(r => r[key]))].filter(Boolean).sort(); }
 function populateSelect(selectEl, values, placeholder, keepValue){
   const current = keepValue ? selectEl.value : '';
   selectEl.innerHTML = `<option value="">${placeholder}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
@@ -431,6 +434,7 @@ function refreshFilterOptions(){
   populateSelect(document.getElementById('gpmFilterCategory'), uniqueValues(gpmData,'category2026'), 'Semua Category', true);
   populateSelect(document.getElementById('gpmFilterBlock'), uniqueValues(gpmData,'block'), 'Semua Block', true);
   populateSelect(document.getElementById('gpmFilterCategory2025'), uniqueValues(gpmData,'category2025'), 'Semua Category', true);
+  populateSelect(document.getElementById('gpmFilterSrdr'), uniqueValues(gpmData,'srdr'), 'Semua SR/DR', true);
 
   populateSelect(document.getElementById('bongkarFilterDivisi'), uniqueValues(gpmData,'divisi'), 'Semua Divisi', true);
   populateSelect(document.getElementById('bongkarFilterVarietas'), uniqueValues(gpmData,'varietas2026'), 'Semua Varietas', true);
@@ -523,6 +527,7 @@ function applyGpmFilters(rows){
     if (gpmFilters.category2026 && r.category2026 !== gpmFilters.category2026) return false;
     if (gpmFilters.block && r.block !== gpmFilters.block) return false;
     if (gpmFilters.category2025 && r.category2025 !== gpmFilters.category2025) return false;
+    if (gpmFilters.srdr && r.srdr !== gpmFilters.srdr) return false;
     if (gpmFilters.marked === 'Yes' && !isMarked(r.id)) return false;
     if (gpmFilters.marked === 'No' && isMarked(r.id)) return false;
     if (s && !(r.petak.toLowerCase().includes(s) || r.kode.toLowerCase().includes(s) || r.block.toLowerCase().includes(s))) return false;
@@ -538,6 +543,7 @@ function renderGpmTable(){
   const filtered = applyGpmFilters(gpmData);
   tbody.innerHTML = filtered.map(r => {
     const marked = isMarked(r.id);
+    const srdrBadge = r.srdr === 'SR' ? 'bg-amber-100 text-amber-800' : r.srdr === 'DR' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-600';
     return `
     <tr class="hover:bg-emerald-50/40 transition-colors">
       <td class="col-sticky bg-white px-3 py-2.5"><input type="checkbox" data-id="${r.id}" onchange="toggleRowCheck('${r.id}', this.checked)" ${r.checked ? 'checked' : ''}></td>
@@ -555,7 +561,7 @@ function renderGpmTable(){
       <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2026ByBlok)}</td>
       <td class="table-cell px-3 py-2.5">${r.category2025}</td>
       <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.tch2025)}</td>
-      <td class="table-cell px-3 py-2.5 text-right mono">${fmtNum(r.srdr)}</td>
+      <td class="table-cell px-3 py-2.5 text-center"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${srdrBadge}">${r.srdr || '-'}</span></td>
       <td class="table-cell px-3 py-2.5 text-center">
         ${marked
           ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">● Yes</span>'
@@ -598,7 +604,7 @@ function moveToBongkar(){
       luas2026: r.luas2026, luasMill: r.luasMill, luasTebang: r.luasTebang,
       varietas2026: r.varietas2026, tglTanam: r.tglTanam, category2026: r.category2026,
       tch2026: r.tch2026, tch2026ByBlok: r.tch2026ByBlok, category2025: r.category2025, tch2025: r.tch2025,
-      status: 'Bongkar', alasan: '',
+      srdr: r.srdr, status: 'Bongkar', alasan: '',
     });
     r.checked = false;
   });
@@ -720,9 +726,9 @@ function removeFromBongkar(id){
 ============================================================ */
 function resetGpmFilters(){
   gpmFilters.search = ''; gpmFilters.divisi = ''; gpmFilters.varietas = '';
-  gpmFilters.category2026 = ''; gpmFilters.block = ''; gpmFilters.category2025 = ''; gpmFilters.marked = '';
+  gpmFilters.category2026 = ''; gpmFilters.block = ''; gpmFilters.category2025 = ''; gpmFilters.marked = ''; gpmFilters.srdr = '';
   document.getElementById('gpmSearch').value = '';
-  ['gpmFilterDivisi','gpmFilterVarietas','gpmFilterCategory','gpmFilterBlock','gpmFilterCategory2025','gpmFilterMarked']
+  ['gpmFilterDivisi','gpmFilterVarietas','gpmFilterCategory','gpmFilterBlock','gpmFilterCategory2025','gpmFilterSrdr','gpmFilterMarked']
     .forEach(id => document.getElementById(id).value = '');
   buildRangeFilters('gpm', RANGE_FIELDS_GPM, gpmData);
   renderGpmTable();
@@ -769,6 +775,7 @@ document.getElementById('gpmFilterVarietas').addEventListener('change', e => { g
 document.getElementById('gpmFilterCategory').addEventListener('change', e => { gpmFilters.category2026 = e.target.value; renderGpmTable(); });
 document.getElementById('gpmFilterBlock').addEventListener('change', e => { gpmFilters.block = e.target.value; renderGpmTable(); });
 document.getElementById('gpmFilterCategory2025').addEventListener('change', e => { gpmFilters.category2025 = e.target.value; renderGpmTable(); });
+document.getElementById('gpmFilterSrdr').addEventListener('change', e => { gpmFilters.srdr = e.target.value; renderGpmTable(); });
 document.getElementById('gpmFilterMarked').addEventListener('change', e => { gpmFilters.marked = e.target.value; renderGpmTable(); });
 
 document.getElementById('bongkarSearch').addEventListener('input', e => { bongkarFilters.search = e.target.value; renderBongkarTable(); });
@@ -788,19 +795,6 @@ renderAll();
 
 /* ============================================================================================
    INTEGRASI GOOGLE APPS SCRIPT WEB APP (ambil data awal GPM & Rekomendasi Bongkar)
-   ------------------------------------------------------------------------------------------
-   1. Deploy Apps Script sebagai Web App (Execute as: Me, Access: Anyone / Anyone with link).
-   2. Endpoint doGet() di Apps Script diharapkan mengembalikan JSON dengan struktur:
-      {
-        "gpm": [ { "kode": "...", "petak": "...", "block": "...", "divisi": "...",
-                   "luas2026": 0, "luasMill": 0, "luasTebang": 0, "varietas2026": "...",
-                   "tglTanam": "...", "category2026": "...", "tch2026": 0,
-                   "tch2026ByBlok": 0, "category2025": "...", "tch2025": 0, "srdr": 0 }, ... ],
-        "bongkar": [ { "id": "...", "status": "Bongkar" | "Tidak Bongkar", "alasan": "..." }, ... ]
-      }
-   3. Ganti GAS_ENDPOINT_URL di bawah dengan URL Web App milikmu (diakhiri /exec).
-   4. Panggil loadDataFromGAS() untuk menimpa mock data dengan data live saat halaman dibuka.
-      Filter (dropdown & range slider) otomatis dibangun ulang mengikuti rentang data baru.
 ============================================================================================ */
 
 const GAS_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxyM3rwvwa9bNs8_N2OAvRK_seS57G75ErSQGmo-9yx8zOIXYWZatTuqJRDZo5Eyc-CVg/exec';
@@ -810,8 +804,6 @@ async function loadDataFromGAS(){
   try {
     badge.innerHTML = 'Sumber data: <span class="text-white font-semibold">Menghubungkan ke Google Apps Script…</span>';
 
-    // Tanpa header custom -> browser kirim "simple request" (tidak ada preflight OPTIONS),
-    // karena Apps Script Web App tidak punya handler doOptions().
     const response = await fetch(GAS_ENDPOINT_URL, { method: 'GET' });
 
     if (!response.ok) throw new Error(`HTTP ${response.status} - gagal mengambil data dari endpoint`);
@@ -824,7 +816,7 @@ async function loadDataFromGAS(){
         Number(row.luas2026) || 0, Number(row.luasMill) || 0, Number(row.luasTebang) || 0,
         row.varietas2026, row.tglTanam, row.category2026,
         Number(row.tch2026) || 0, Number(row.tch2026ByBlok) || 0,
-        row.category2025, Number(row.tch2025) || 0, Number(row.srdr) || 0
+        row.category2025, Number(row.tch2025) || 0, row.srdr || ''
       ));
     }
 
@@ -838,22 +830,21 @@ async function loadDataFromGAS(){
           tglTanam: source.tglTanam || '', category2026: source.category2026 || '',
           tch2026: source.tch2026 || 0, tch2026ByBlok: source.tch2026ByBlok || 0,
           category2025: source.category2025 || '', tch2025: source.tch2025 || 0,
+          srdr: source.srdr || '',
           status: row.status || 'Bongkar', alasan: row.alasan || '',
         };
       });
     }
 
     badge.innerHTML = `Sumber data: <span class="text-white font-semibold">Google Apps Script (live)</span> &middot; ${new Date().toLocaleTimeString('id-ID')}`;
-    renderAll(); // membangun ulang seluruh filter (dropdown + range slider) sesuai domain data baru
+    renderAll();
 
   } catch (err) {
     console.error('Gagal memuat data dari Google Apps Script:', err);
     badge.innerHTML = 'Sumber data: <span class="text-red-300 font-semibold">Gagal terhubung — memakai Mock Data</span>';
-    // Aplikasi tetap berjalan dengan mock data jika fetch gagal
   }
 }
 
-// Aktifkan baris di bawah ini untuk mengambil data otomatis saat halaman dimuat:
 loadDataFromGAS();
 </script>
 </body>
